@@ -31,10 +31,11 @@
           <input name="lw" value="<?php echo $lw ?>  " hidden >
           <input name="tow" value=" <?php echo $tow ?>" hidden >  
           <input name="niveldevoo" value="<?php echo  $niveldevoo ?> " hidden >            
-          <input name="consumo" value=" <?php echo $consumo ?> " hidden >              
+          <input name="consumo" value=" <?php echo $consumo ?> " hidden >     
+          <input name="unidade" value=" <?php echo $unidade ?> " hidden >          
                   
           <input name="pbo" value=" <?php echo $pbo ?>" hidden >  
-          <input name="autonomiafuelKG" value="<?php echo $autonomiafuelKG ?> " hidden >
+          <input name="autonomiafuelKG" value="<?php echo $fuelValueKG ?> " hidden >
           <input name="dispresult" value="<?php echo $dispresult ?> " hidden >
           <input name="cargaprev" value="<?php echo empty($cargaprev)? "Não informado": $cargaprev ?> " hidden >
           <input name="autonomiahoras" value="<?php echo $autonomiamin ?> " hidden >

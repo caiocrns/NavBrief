@@ -43,7 +43,7 @@
     <div class="container">
         <img src="assets/navbrief.png" alt="NavBrief Logo">
         <h1>Estamos em manutenção</h1>
-        <p>Em breve retornaremos. Obrigado pela sua paciência.</p>
+        <p>Em breve retornaremos.</p>
     </div>
 </body>
 </html>

@@ -10,49 +10,42 @@
       include_once('lib/conn.php');   
       
      
+// Captura o ID do voo da URL
+$idvoo = isset($_GET['id']) ? mysqli_real_escape_string($conexao, $_GET['id']) : 0;
 
+// Busca os detalhes do voo específico
+$sql = "SELECT * FROM voos WHERE id = '$idvoo' LIMIT 1";
+$queryvoo = mysqli_query($conexao, $sql);
+$db_voos = mysqli_fetch_assoc($queryvoo);
 
-      $sql = "SELECT * FROM voos";          // buscar voos banco dados
-      $queryvoo= mysqli_query($conexao,$sql);
-      $db_voos = mysqli_fetch_assoc($queryvoo);
+// Se o voo for encontrado, preenche as variáveis
+if ($db_voos) {
+    $origem = $db_voos['origem'];
+    $destino = $db_voos['destino'];
+    $alternativo = $db_voos['alternativo'];
+    $datadovoo = $db_voos['datadovoo'];
+    $horadep = $db_voos['horadep'];
+    $niveldevoo = $db_voos['niveldevoo'];
+    $idanv = $db_voos['aeronave'];
+    $cargaprev = $db_voos['cargaprev'];    
+}
 
-      $sql = " SELECT id FROM voos ORDER BY id DESC LIMIT 1";                     // BUSCAR voos BANCO DE DADOS
-      $queryvoos = mysqli_query($conexao,$sql);
-      $last_id_voos = mysqli_fetch_assoc($queryvoos); 
-       
+// Busca o último ID dos voos
+$sql = "SELECT id FROM voos ORDER BY id DESC LIMIT 1";
+$queryvoos = mysqli_query($conexao, $sql);
+$last_id_voos = mysqli_fetch_assoc($queryvoos);
 
-      $url = '://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']; 
-      $url = explode("=", $url);
-      $id = $url[count($url) - 1]; 
-      
-      do { 
+// Busca os dados da aeronave associada ao voo
+$sql = "SELECT id, icao_aeronave, matricula FROM aeronaves WHERE id = '$idanv'";
+$result = mysqli_query($conexao, $sql);
+$aeronavebyid = mysqli_fetch_assoc($result);
 
-        if($id == $db_voos['id']) {
-           $origem = $db_voos['origem'];
-           $destino = $db_voos['destino'];
-           $alternativo = $db_voos['alternativo'];
-           $datadovoo = $db_voos['datadovoo'];
-           $horadep = $db_voos ['horadep'];
-           $niveldevoo = $db_voos['niveldevoo'];
-           $idanv = $db_voos['aeronave'];
-           $cargaprev = $db_voos['cargaprev'];                 
-      
-        }
-         }
-        while ($db_voos = mysqli_fetch_assoc($queryvoo)); 
+$icao_anv_byid = $aeronavebyid['icao_aeronave'];
 
-
-       
-        $sql = "SELECT id,icao_aeronave,matricula FROM aeronaves WHERE id = '$idanv'";       
-        $result = $conexao->query($sql);
-        $aeronavebyid = mysqli_fetch_assoc($result);
-
-        $icao_anv_byid = $aeronavebyid['icao_aeronave'];
-        
-        
-      $sql = "SELECT id,icao_aeronave,matricula FROM aeronaves WHERE icao_aeronave = '$icao_anv_byid'";          // buscar anv banco dados
-      $queryanv = mysqli_query($conexao,$sql);
-      $lista_aeronaves = mysqli_fetch_assoc($queryanv);
+// Busca aeronaves pelo modelo ICAO
+$sql = "SELECT id, icao_aeronave, matricula FROM aeronaves WHERE icao_aeronave = '$icao_anv_byid'";
+$queryanv = mysqli_query($conexao, $sql);
+$lista_aeronaves = mysqli_fetch_assoc($queryanv);
 
          ?>
 
@@ -78,7 +71,9 @@
 
 
               <div class="form-floating">
-                  <input type="number" class="form-control" name="idvoo" value="<?php echo $last_id_voos ['id'] + 1 ?>" hidden >                   
+                  <input type="number" class="form-control" name="idvoo" value="<?php echo $idvoo ?>" hidden >
+                  <input type="hidden" name="action" value="edit">
+                   
                   </div>
 
                 <div class="col-auto">
@@ -138,18 +133,13 @@
                 <hr>
                 <div class="text-center">
                                  
-  <a  style="text-align: center;" class="btn btn-sm btn-primary"   data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+  <!--<a  style="text-align: center;" class="btn btn-sm btn-primary"   data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
     Payload
-  </a>
+  </a> -->
                     </div>
 
 
 <div class="collapse" id="collapseExample">
-<!--<div class="form-floating">
-                  <input type="number" class="form-control"  name="pesotrip" value="<?php echo $pesotrip ?>" >
-                    <label for="floatingPassword">Peso tripulação</label>
-                  </div>
-                  <p></p>-->
                   <div class="form-floating">
                   <input type="number" class="form-control" name="cargaprev" value="<?php echo $cargaprev ?>"  >
                     <label for="floatingPassword">Payload (Carga + Pax)</label>
@@ -169,7 +159,7 @@
 
                 <div class="text-center">
                 <button type="reset" class="btn btn-secondary">Resetar</button>
-                <button type="submit" name="submit" class="btn btn-success">Planejar</button>                 
+                <button type="submit" name="submit" class="btn btn-success">Editar</button>                 
                   
                 </div> 
               </form><!-- End floating Labels Form -->
@@ -191,18 +181,7 @@
 </script>
 
   <!-- ======= Footer ======= -->
-  <footer id="footer" class="footer">
-    <div class="copyright">
-      &copy; Copyright <strong><span>NavBrief by STO</span></strong>. All Rights Reserved
-    </div>
-    <div class="credits">
-      <!-- All the links in the footer should remain intact. -->
-      <!-- You can delete the links only if you purchased the pro version. -->
-      <!-- Licensing information: https://bootstrapmade.com/license/ -->
-      <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/ -->
-      Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-    </div>
-  </footer><!-- End Footer -->
+   <?php include 'includes/footer.php'   ?>
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 

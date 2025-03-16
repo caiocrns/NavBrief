@@ -26,7 +26,7 @@ $row_voos = mysqli_fetch_assoc($queryvoos);
                 <!-- Table with stripped rows -->
                 <table class="table-sm datatable" >
             <thead>
-                <tr>
+                <tr>                
                 <th scope="col"></th>
                   <th scope="col">Origem</th>
                   <th scope="col">Destino</th>
@@ -45,7 +45,19 @@ $row_voos = mysqli_fetch_assoc($queryvoos);
               <?php if (mysqli_num_rows($queryvoos) > 0) {
                 foreach ($queryvoos as $lista_voos) { ?>
     <tr>
-        <td><a class="btn btn-sm btn-primary" href="editplanner.php?id=<?php echo $lista_voos['id']; ?>"><i class="bi bi-airplane-fill"></i></td>
+    <td>
+    <?php if (!empty($lista_voos['linkvoo'])): ?>
+        <a class="btn btn-sm btn-warning mt-2" href="<?php echo $lista_voos['linkvoo']; ?>">
+            <i class="bi bi-eye"></i> Ver
+        </a>
+    <?php endif; ?>
+    <a class="btn btn-sm btn-primary mt-2" href="editplanner.php?id=<?php echo $lista_voos['id']; ?>">
+        <i class="bi bi-airplane-fill"></i> Editar
+    </a>
+</td>
+
+
+
         <td><?php echo $lista_voos['origem']; ?></td>
         <td><?php echo $lista_voos['destino']; ?></td>
         <td><?php echo $lista_voos['alternativo']; ?></td>

@@ -1,23 +1,25 @@
+<!-- STAND BY -->
+
+
 <?php
-session_start();
-include('lib/conn.php'); // Certifique-se de que este arquivo define a conexão $conexao
+include_once('lib/conn.php');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fueleditado = $_POST['fueleditado'];
-    $idvoo = $_POST['idvoo'];
+$fueleditado = $_POST['fueleditado']; //LB 
+$idvoo = $_POST['idvoo'];
+$dispresult = $_POST['dispresult'];
+$autonomiafuelKG = $_POST['autonomiafuelKG']; //KG
 
-    // Atualiza o combustível no banco de dados
-    $addfuel = mysqli_query($conexao, "UPDATE voos SET fuel = '$fueleditado' WHERE id = '$idvoo'") or die(mysqli_error($conexao));
+$autonomiafuelKG_editado = $fueleditado*0.45; //KG
+$dispresult_editado = ($dispresult - ($autonomiafuelKG_editado - $autonomiafuelKG));
 
-    // Verifica se a atualização foi bem-sucedida
-    if ($addfuel) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Erro ao atualizar o combustível']);
-    }
-    exit();
-} else {
-    // Se a solicitação não for POST, enviar uma resposta de erro
-    echo json_encode(['status' => 'error', 'message' => 'Método não permitido']);
-    exit();
-}
+// Usamos a declaração UPDATE para atualizar o valor do campo "fuel" na tabela "voos" para o valor fornecido
+$addfuel = mysqli_query($conexao, "UPDATE voos SET fuel = '$fueleditado' WHERE id = '$idvoo'") or die(mysqli_error($conexao));
+
+$mensagemfuel = "<span style='color: green;font-size:11px'> Aeronave abastecida </span> <br>";
+
+$response_array = array('fueleditado' => $fueleditado, 'autonomiafuelKG_editado' => $autonomiafuelKG_editado, 'mensagemfuel' => $mensagemfuel,'dispresult_editado' => $dispresult_editado);
+
+header('Content-Type: application/json');
+echo json_encode($response_array);
+
+?>

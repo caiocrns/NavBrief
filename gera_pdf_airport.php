@@ -2,7 +2,6 @@
  include 'lib/function.php' ;
  include 'lib/conn.php'   ;
  include 'lib/config.php'   ;
- include 'lib/key.php'   ;
  require_once('lib/TCPDF/tcpdf.php');
  
  header('Content-Type: application/pdf');
@@ -10,78 +9,34 @@
  header('Cache-Control: no-cache, no-store, must-revalidate');
  header('Pragma: no-cache');
  header('Expires: 0');
+
 ob_start();
 
-	$origem = $_POST['origem'];  
-	$destino =$_POST['destino'];
-	$alternativo =$_POST['alternativo'];
-	$nomeorigem=$_POST['nomeorigem'];
-	$nomedestino=$_POST['nomedestino'];
-	$niveldevoo = $_POST['niveldevoo'];
-	$nomealternativo=$_POST['nomealternativo'];
-	$iataorigem =$_POST['iataorigem'];
-	$iatadestino =$_POST['iatadestino'];
-	$iataalternativo =$_POST['iataalternativo'];
-	$etahoras = $_POST['etahoras'];  
-	$horadep =$_POST['horadep'];
-	$datadovoobr =$_POST['datadovoobr'];
-	$matricula = $_POST['matricula'];  
-	$aeronave =$_POST['aeronave'];
-	$modelo =$_POST['modelo'];
-	$metarorigem =$_POST['metarorigem'];
-	$metardestino =$_POST['metardestino'];
-	$metaralternativo =$_POST['metaralternativo'];
-	$notamorigem =$_POST['notamorigem'];
-	$notamdestino=$_POST['notamdestino'];
-	$notamalternativo =$_POST['notamalternativo'];	
-	$mzfw =$_POST['mzfw'];
-	$mtw =$_POST['mtw'];
-	$mtow =$_POST['mtow'];
-	$mlw =$_POST['mlw'];
-	$zfw =$_POST['zfw'];
-	$tw =$_POST['tw'];
-	$tow =$_POST['tow'];
-	$lw =$_POST['lw'];
-	$consumo = $_POST['consumo'];
-	$fuelAB  =$_POST['fuelAB'];
-	$fuelBC =$_POST['fuelBC'];
-	$fuelextra =$_POST['fuelextra'];
-	$autonomiahoras =$_POST['autonomiahoras'];
-	$autonomiafuel= $_POST['autonomiafuel'];
-	$timeABhoras = mintohourspdf($_POST['timeABmin']);
-	$timeBChoras= mintohourspdf($_POST['timeBCmin']);
-	$timeABeet= mintohours($_POST['timeABmin']);
-	$autonomiahoras= mintohourspdf($_POST['autonomiahoras']);
-	$dispresult = $_POST['dispresult'];		
-  $fuelValueKG = $_POST['autonomiafuelKG'];	
-	$pbo = $_POST['pbo'];	
-	$cargaprev = $_POST['cargaprev'];	
-	$time_extra = time_extra;
-	$consumo_por_min = $consumo/60;
-	$fuelproc = $consumo_por_min * time_proc;
-	$timeproc = "000".time_proc;
-    $idvoo = $_POST['idvoo'];
-	$unidade = $_POST['unidade'];  
+$dep = strtoupper($_POST['dep']); 
+$arr = strtoupper($_POST['arr']); 
+$altn = strtoupper($_POST['altn']); 
+$fl = $_POST['fl']; 
+$metardep = $_POST['metardep'];
+$metararr = $_POST['metararr'];
+$metaraltn = $_POST['metaraltn'];
+$notamdep = $_POST['notamdep'];
+$notamarr = $_POST['notamarr'];
+$notamaltn = $_POST['notamaltn'];
 
-	
-$selectrota = mysqli_query($conexao, "SELECT rota from voos WHERE id='$idvoo'") or die(mysqli_error($conexao));
-$db_voos = mysqli_fetch_assoc($selectrota);
-$rota = empty($db_voos['rota']) ? "Não informada" : strtoupper($db_voos['rota']);
-	
-// OBTEM MELHOR CARTA DE VENTO
+// Lista de cartas de vento disponíveis
 $cartasDeVento = [050,100,180,240,300,340,390,450,630];
 // Inicializa variáveis para armazenar a menor diferença e a carta correspondente
 $menorDiferenca = null;
 $cartaEscolhida = null;
+
 // Itera sobre as cartas disponíveis
 foreach ($cartasDeVento as $nivel) {
-    $diferenca = abs($niveldevoo - (int)$nivel); // Calcula a diferença absoluta
+    $diferenca = abs($fl - (int)$nivel); // Calcula a diferença absoluta
     if ($menorDiferenca === null || $diferenca < $menorDiferenca) {
         $menorDiferenca = $diferenca;
         $nivelEscolhido = $nivel;
     }
 }	
-// END OBTEM MELHOR CARTA DE VENTO
 
 $sigwxImageUrl = getsigwx();
 $satelite = "assets/img/satelite2.png";
@@ -89,8 +44,9 @@ $sigwx_sup = "https://aviationweather.gov/data/products/fax/F24_sigwx_hi_a.gif";
 $winds_aloft = "https://aviationweather.gov/data/products/fax/F12_wind_{$nivelEscolhido}_a.gif";
 $response_satelite = getsatelite("realcada");
 $data_satelite = json_decode($response_satelite, true);
+
 // --------------------------------	
-function processRotaer($icaoCode) {
+function processRotaer($icaoCode) { 
   global $apiKey_aisweb;
   global $apiPass_aisweb;
   $area = 'rotaer';      
@@ -130,6 +86,7 @@ return [
     'icaoCode' => $icaoCode,
     'remarks' => $remarks,
 ];
+
 }
 
      
@@ -154,7 +111,7 @@ $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Definir informações do documento
 $pdf->SetCreator(PDF_CREATOR);
 $pdf->SetAuthor('NavBrief By STO');
-$pdf->SetTitle('Briefing ' . utf8_encode($origem) . '-' . utf8_encode($destino));
+$pdf->SetTitle('Briefing ' . utf8_encode($dep) . '-' . utf8_encode($arr));
 $pdf->SetSubject('Plano de Voo');
 $pdf->SetKeywords('NavBrief, plano de voo, briefing');
 
@@ -243,116 +200,24 @@ $html = <<<EOF
   <!-- Section Title -->
   <div class="section-title">INFORMAÇÕES</div>
 
-  <!-- Flight Information -->
+  <!-- Airport Information -->
   <table border="1">
     <tr>
-      <th width="20%">Data do Voo</th>
-      <th width="10%">ETD</th>
-      <th width="10%">EET</th>
-      <th width="10%">ETA</th>
-      <th width="15%">Aeronave</th>
-      <th width="15%">Matrícula</th>
-      <th width="20%">Nível de Voo</th>
+      <th width="33%">ORIGEM</th>
+      <th width="33%">DESTINO</th>
+      <th width="33%">ALTERNATIVO</th>      
     </tr>
     <tr>
-      <td>$datadovoobr</td>
-      <td>$horadep Z</td>
-      <td>$timeABeet</td>
-      <td>$etahoras Z</td>
-      <td>$aeronave</td>
-      <td>$matricula</td>
-      <td>FL $niveldevoo</td>
+      <td>$dep</td>
+      <td>$arr</td>
+      <td>$altn</td>
+      
     </tr>
   </table>
 
-  <!-- Route Section -->
-  <div class="section-title">ROTA PLANEJADA</div>
-  <table border="1">
-    <tr>
-      <td>$rota</td>
-    </tr>
-  </table>
-  </div>  
+ 
 
-  <!-- Fuel Section -->
-  <div class="section-title">COMBUSTÍVEL</div>
-  <table border="1">
-    <tr>
-      <th width="25%">Etapa</th>
-      <th width="25%">ARPT</th>
-      <th width="25%">Fuel</th>
-      <th width="25%">Time</th>
-    </tr>
-    <tr>
-      <td>DEST + PROC</td>
-      <td>$iatadestino</td>
-      <td>$fuelAB</td>
-      <td>$timeABhoras</td>
-    </tr>
-    <tr>
-      <td>ALTN</td>
-      <td>$iataalternativo</td>
-      <td>$fuelBC</td>
-      <td>$timeBChoras</td>
-    </tr>
-    <tr>
-      <td>EXTRA</td>
-      <td>-</td>
-      <td>$fuelextra</td>
-      <td>$time_extra</td>
-    </tr>
-    <tr>
-      <td>ABASTECIDO</td>
-      <td>-</td>
-      <td><b>$autonomiafuel $unidade</b></td>
-      <td><b>$autonomiahoras</b></td>
-    </tr>
-  </table>
-
-  <!-- Loadsheet Section -->
-  <div class="section-title">LOADSHEET (KG) </div>
-  <table border="1">
-    <tr>
-      <th>Peso (KG)</th>
-      <th>Decolagem</th>
-      <th>Rampa</th>
-      <th>Pouso</th>
-      <th>Zero Comb</th>
-    </tr>
-    <tr>
-      <td>MÁX</td>
-      <td>$mtow</td>
-      <td>$mtw</td>
-      <td>$mlw</td>
-      <td>$mzfw</td>
-    </tr>
-    <tr>
-      <td>PREV</td>
-      <td>$tow</td>
-      <td>$tw</td>
-      <td>$lw</td>
-      <td>$zfw</td>
-    </tr>
-  </table>
-
-<table border="1">
-    <tr>
-      <th width="25%">PBO</th> 
-      <th width="25%">FUEL</th> 
-      <th width="25%">PAYLOAD</th>
-      <th width="25%">DISP</th>         
-    </tr>
-    <tr>
-      <td>$pbo</td> 
-      <td>$fuelValueKG </td>  
-      <td>$cargaprev</td>   
-      <td>$dispresult </td>       
-    </tr>
-  </table>
-
-</div>
-
-<!-- NOTAM Section -->
+<!-- METAR e TAF Section -->
   <div class="section-title">INFORMAÇÕES METEOROLÓGICAS</div>
   <table border="1">
     <tr>
@@ -361,9 +226,9 @@ $html = <<<EOF
       <th width="33%">ALTERNATIVO</th>      
     </tr>
     <tr>
-      <td>$metarorigem </td> 
-      <td>$metardestino </td>  
-      <td>$metaralternativo </td>       
+      <td>$metardep </td> 
+      <td>$metararr</td>  
+      <td>$metaraltn </td>       
     </tr>
   </table>
   </div>
@@ -372,29 +237,29 @@ $html = <<<EOF
 <div class="section-title">NOTICE TO AIRMEN (NOTAM)</div>
 <table border="1" style="width: 100%;">
     <tr>
-        <th>ORIGEM ($nomeorigem)</th>
+        <th>ORIGEM ($dep)</th>
     </tr>
     <tr>
-        <td style="text-align: left; text-align: justify;">$notamorigem</td>
+        <td style="text-align: left; text-align: justify;">$notamdep</td>
     </tr>
 </table>
 <p></p>
 
   <table border="1">
     <tr>
-      <th width="100%">DESTINO ($nomedestino)</th>      
+      <th width="100%">DESTINO ($arr)</th>      
     </tr>
     <tr>
-      <td style="text-align: left; text-align: justify;">$notamdestino </td>      
+      <td style="text-align: left; text-align: justify;">$notamarr </td>      
     </tr>
   </table>
 <p></p>
   <table border="1">
     <tr>
-      <th width="100%">ALTERNATIVO ($nomealternativo)</th>      
+      <th width="100%">ALTERNATIVO ($altn)</th>      
     </tr>
     <tr>
-      <td style="text-align: left; text-align: justify;">$notamalternativo </td>      
+      <td style="text-align: left; text-align: justify;">$notamaltn </td>      
     </tr>
   </table>
 </div>
@@ -437,9 +302,9 @@ function addRotaerToPdf($pdf, $rotaers) {
 try {
   // Defina os códigos ICAO de origem, destino e alternativo
   $icaoCodes = [
-      'Origem' => $origem, // São Paulo/Guarulhos
-      'Destino' => $destino, // Rio de Janeiro/Santos Dumont
-      'Alternativo' => $alternativo, // São Paulo/Congonhas
+      'Origem' => $dep, // São Paulo/Guarulhos
+      'Destino' => $arr, // Rio de Janeiro/Santos Dumont
+      'Alternativo' => $altn, // São Paulo/Congonhas
   ];
 
   // Processa os dados para cada local
@@ -465,13 +330,14 @@ $pdf->Ln(10);
 $pdf->Image($sigwxImageUrl, 15, 40, 180, 180, 'PNG', '', 'C', true, 300, '', false, false, 0, false, false, false);
 
 // Inserir a carta SIGWX SUP
-if($niveldevoo > 230) {
+if($fl > 230) {
   $pdf->AddPage();
   $pdf->SetFont('helvetica', '', 12);
   $pdf->Cell(0, 10, 'Carta SIGWX (FL250-FL600)', 0, 1, 'C');
   $pdf->Ln(10);
   $pdf->Image($sigwx_sup, 15, 40, 180, 180, 'PNG', '', 'C', true, 300, '', false, false, 0, false, false, false);
 }
+
 
 // Inserir a carta WINDS ALOFT
 $pdf->AddPage();
@@ -487,7 +353,7 @@ if (!isset($data_satelite['error'])) {
     // Adiciona título e espaço no PDF
     $pdf->Cell(0, 10, 'Imagem de Satélite', 0, 1, 'C');
     $pdf->Ln(10);
-    // Recupera o caminho da imagem e imprime no PDF
+    // Recupera o caminho da imagem e imprime no PDF    
     $pdf->Image($satelite, 15, 40, 180, 180, 'PNG', '', 'C', true, 300, '', false, false, 0, false, false, false);
     $pdf->Image($data_satelite['path'], 15, 40, 180, 180, 'PNG', '', 'C', true, 300, '', false, false, 0, false, false, false);
     // Adiciona informações extras ao PDF, como coordenadas e timestamp
@@ -519,7 +385,7 @@ $pdf->lastPage();
 while( ob_get_level() ) {
     ob_end_clean();
 }
-$pdf->Output('OFP ('.$origem.'-'.$destino.').pdf', 'D');
+$pdf->Output('Briefing ('.$dep.'-'.$arr.'-'.$altn.').pdf', 'D');
 ob_end_flush(); 
 
 //============================================================+

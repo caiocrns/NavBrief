@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Conexão com a Internet</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    #logo {
+      width: 150px;
+      height: 150px;
+      background: url('assets/navbrief.png') no-repeat center center;
+      background-size: contain;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    .offline {
+      color: red;
+    }
+    .online {
+      color: green;
+    }
+    .loader {
+      border: 16px solid #f3f3f3; /* Light grey */
+      border-top: 16px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 2s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="logo"></div>
+  <div id="status" class="online">Você está online</div>
+  <div class="loader" id="loader"></div>
+
+  <script>
+    function updateOnlineStatus() {
+      const statusElement = document.getElementById('status');
+      const loader = document.getElementById('loader');
+      if (navigator.onLine) {
+        statusElement.textContent = 'Você está online';
+        statusElement.className = 'online';
+        loader.style.display = 'block';
+        setTimeout(() => {
+          window.location.href = 'home.php';
+        }, 3000);
+      } else {
+        statusElement.textContent = 'Você está offline. Verifique sua conexão com a internet.';
+        statusElement.className = 'offline';
+        loader.style.display = 'none';
+      }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    // Initial status check
+    updateOnlineStatus();
+  </script>
+</body>
+</html>

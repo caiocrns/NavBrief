@@ -3,24 +3,47 @@
       include 'lib/conn.php'; 
       include 'lib/config.php';  
 
+
+
+
+if (isset($_GET['error'])) {
+    $error_message = htmlspecialchars($_GET['error'], ENT_QUOTES, 'UTF-8');
+    echo "
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: '$error_message',
+            confirmButtonText: 'Ok'
+        });
+    </script>
+    ";
+}
+
+
+// Verifica se 'aeronaveselec' foi enviado via POST, caso contrário, tenta capturar via GET
+$aeronave_selec = isset($_POST['aeronaveselec']) ? $_POST['aeronaveselec'] : (isset($_GET['aeronaveselec']) ? $_GET['aeronaveselec'] : null);
+
+// Continua apenas se $aeronave_selec não for nulo
+if ($aeronave_selec) {
+    // Buscar o último ID da tabela 'voos'
+    $sql2 = "SELECT id FROM voos ORDER BY id DESC LIMIT 1";
+    $queryvoos = mysqli_query($conexao, $sql2);
+    $last_id_voos = mysqli_fetch_assoc($queryvoos); 
+
+    // Buscar dados da aeronave no banco de dados
+    $sql3 = "SELECT DISTINCT operador, nome_aeronave FROM aeronaves WHERE icao_aeronave = '$aeronave_selec'";
+    $queryop = mysqli_query($conexao, $sql3);
+    $lista_operador = mysqli_fetch_assoc($queryop);
+
+    // Fecha a conexão
+    $conexao->close();
+} else {
+    echo "Erro: Nenhum valor foi recebido para 'aeronaveselec'.";
+}
+
 ?>
 
-<?php 
-
-      $aeronave_selec = $_POST['aeronaveselec'];
-
-      $sql2 = " SELECT id FROM voos ORDER BY id DESC LIMIT 1";                     // BUSCAR voos BANCO DE DADOS
-      $queryvoos = mysqli_query($conexao,$sql2);
-      $last_id_voos = mysqli_fetch_assoc($queryvoos); 
-
-      $sql3 = "SELECT DISTINCT operador,nome_aeronave FROM aeronaves WHERE icao_aeronave = '$aeronave_selec'";          // buscar anv banco dados
-      $queryop= mysqli_query($conexao,$sql3);
-      $lista_operador = mysqli_fetch_assoc($queryop);
-
-       
-    $conexao->close();
-    
-      ?>
 
       
  
@@ -34,7 +57,6 @@
     <section class="section">
       <div class="row d-flex justify-content-center">
         <div class="col-lg-6">
-
       
           <div class="card">
             <div class="card-body ">
@@ -57,19 +79,19 @@
 
                 <div class="col-auto">
                   <div class="form-floating">
-                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="origem" placeholder="Origem" maxlength="4" required> 
+                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="origem" placeholder="Origem" minlength="4" maxlength="4" required> 
                     <label for="origem">Origem</label>
                   </div>
                 </div>  
                 <div class="col-auto">
                   <div class="form-floating">
-                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="destino" placeholder="Destino" maxlength="4" required>
+                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="destino" placeholder="Destino" minlength="4" maxlength="4" required>
                     <label for="floatingEmail">Destino</label>
                   </div>
                 </div>
                 <div class="col-auto">
                   <div class="form-floating">
-                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="alternativo" placeholder="Alternativo" maxlength="4" required>
+                    <input type="text" class="form-control form-control-sm" style="text-transform: uppercase" name="alternativo" placeholder="Alternativo" minlength="4" maxlength="4" required>
                     <label for="floatingEmail">Alternativo</label>
                   </div>
                 </div>             
@@ -129,7 +151,10 @@
 
               
 
-                <p class="card-title"><span> <i class="fa fa-info-circle" aria-hidden="true"></i> Para gerar um nível de voo sugerido, deixe o respectivo campo em branco. <br> <i class="fa fa-info-circle" aria-hidden="true"></i>  Selecione um operador para obter as matrículas disponíveis.</span></p>
+                <p class="card-title"><span> <i class="fa fa-info-circle" aria-hidden="true"></i> Para gerar um nível de voo sugerido, deixe o respectivo campo em branco. <br> 
+                <i class="fa fa-info-circle" aria-hidden="true"></i>  Selecione um operador para obter as matrículas disponíveis.<br>
+                <i class="fa fa-info-circle" aria-hidden="true"></i>  ORGN, DEST e ALTN devem ser preenchidos como cód. ICAO</span>
+                </p>
                
                 <hr>
               

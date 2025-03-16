@@ -18,7 +18,7 @@ include 'lib/db_function.php';
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
   <title>NavBrief</title>
-  <meta content="Bem vindo ao NavBrief! Planeje o seu voe com apenas alguns cliques e obtenha informações das fontes oficiais de navegação aérea." name="description">
+  <meta content="Bem vindo ao NavBrief! Planeje o seu voo com apenas alguns cliques e obtenha informações das fontes oficiais de navegação aérea." name="description">
   <meta content="Planejar. Voar. AISWEB. REDEMET." name="keywords">
   <meta name="author" content="NavBrief.com.br">
 
@@ -29,6 +29,13 @@ include 'lib/db_function.php';
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Roboto:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link rel="manifest" href="/manifest.json">
+  <script>
+  if (typeof navigator.serviceWorker !== 'undefined') {
+    navigator.serviceWorker.register('assets/js/pwabuilder-sw.js')
+  }
+</script>
+
  
   <!-- Vendor CSS Files -->
 
@@ -50,9 +57,11 @@ include 'lib/db_function.php';
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+  
 </head>
 
 <body>
+    
 
   <!-- ======= Top Bar ======= 
   <section id="topbar" class="d-flex align-items-center">
@@ -85,7 +94,7 @@ include 'lib/db_function.php';
           <li><a class="nav-link scrollto" href="#services">Serviços</a></li> 
           <li><a class="nav-link scrollto" href="#pricing">Planos</a></li>             
           <li><a class="nav-link scrollto" href="#contact">Contato</a></li>
-          <li><a class="nav-link scrollto" href="donation.php" style="color: green;"><b> Ajude!</b></li>          
+          <li><a class="nav-link scrollto" href="donation.php" style="color: green;"><b> Ajude!</a></b></li>
           <li><button type="button" class="btn btn-sm btn-primary"><a href="home.php" style="color: white;">Entrar</a></button></li>
        
          <!-- <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
@@ -118,13 +127,115 @@ include 'lib/db_function.php';
     <div class="container" data-aos="zoom-out" data-aos-delay="100">
       <h1 ><span>Bem vindo ao</span> NavBrief</h1>
       <h2><b>Seu planejador de voo gratuito.</b></h2>
+      <style>
+    .d-flex {
+      display: flex;
+      gap: 10px; /* Adiciona espaço entre os links */
+      
+    }  #installButton {
+      display: none; /* Esconder botão inicialmente */
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #installButton:hover {
+      background-color: #218838;
+    } 
+    #iosInstallInstructions {
+      display: none;
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    </style>
       <div class="d-flex">
-        <a href="home.php" class="btn-get-started scrollto"><i class="bi bi-airplane"></i> Comece a planejar</a>
-        <!--<a href="https://www.youtube.com/watch?v=jDDaplaOz7Q" class="glightbox btn-watch-video"><i class="bi bi-play-circle"></i><span>Watch Video</span></a>-->
+        <a href="home.php" class="btn-get-started scrollto"><i class="bi bi-airplane"></i> Entrar</a>
+          <a href="donation.php" class="btn-get-started scrollto"><i class="bi bi-info-circle"></i> Ajude</a>
       </div>
+      <div id="iosInstallInstructions">
+    <p>Para adicionar este aplicativo à tela inicial:</p>
+    <ol>
+      <li>Toque no ícone de compartilhamento na barra de menu do Safari.</li>
+      <li>Selecione "Adicionar à Tela de Início".</li>
+      <li>Toque em "Adicionar" no canto superior direito.</li>
+    </ol>
+  </div>
+      <button id="installButton">Instalar App</button>
+      <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Impedir o prompt de instalação imediato
+      e.preventDefault();
+      // Salvar o evento para acioná-lo posteriormente
+      deferredPrompt = e;
+      // Mostrar o botão de instalação
+      document.getElementById('installButton').style.display = 'block';
+    });
+
+    document.getElementById('installButton').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        // Mostrar o prompt de instalação
+        deferredPrompt.prompt();
+        // Esperar pela escolha do usuário
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('Usuário aceitou a instalação do PWA');
+        } else {
+          console.log('Usuário rejeitou a instalação do PWA');
+        }
+        // Limpar o deferredPrompt
+        deferredPrompt = null;
+        // Esconder o botão de instalação
+        document.getElementById('installButton').style.display = 'none';
+      }
+    });
+     function isIos() {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      return /iphone|ipad|ipod/.test(userAgent);
+    }
+
+    function isInStandaloneMode() {
+      return ('standalone' in window.navigator) && (window.navigator.standalone);
+    }
+
+    function showIosInstallInstructions() {
+      Swal.fire({
+        title: 'Adicionar à Tela de Início',
+        html: `
+          <p>Para adicionar este aplicativo à tela inicial:</p>
+          <ol>
+            <li>Toque no ícone de compartilhamento na barra de menu do Safari.</li>
+            <li>Selecione "Adicionar à Tela de Início".</li>
+            <li>Toque em "Adicionar" no canto superior direito.</li>
+          </ol>
+        `,
+        icon: 'info',
+        confirmButtonText: 'OK'
+      });
+    }
+
+    document.getElementById('installButton').addEventListener('click', () => {
+      if (isIos() && !isInStandaloneMode()) {
+        showIosInstallInstructions();
+      }
+    });
+
+    // Exibir o botão de instalação se não estiver no iOS ou já estiver em modo standalone
+    if (isIos() && !isInStandaloneMode()) {
+      document.getElementById('installButton').style.display = 'block';
+    }
+    </script>
     </div>
   </section><!-- End Hero -->
-
+ 
   <main id="main">
 
     <!-- ======= Featured Services Section ======= --->
@@ -895,45 +1006,6 @@ include 'lib/db_function.php';
 
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-  <script>
-    let timerInterval;
-    document.addEventListener("DOMContentLoaded", function() {
-      Swal.fire({
-        title: "Changelog (21/05)",
-        html: `
-          <div style="text-align: justify;">
-            <ul>
-              <li>Add C-97</li>
-              <li>Add C-105</li>
-              <li>Correção de bugs</li>
-              <li>Melhoria de performance</li>
-            </ul>
-            Caso encontre algum erro ou tenha sugestões, envie-nos uma <a href="https://www.instagram.com/navbrief" target="_blank" style="color: red"> mensagem no instagram</a>.
-            <hr>
-            <p style="color: green">Considere fazer uma doação para manter o NavBrief online!</p>
-          </div>
-        `,
-        width: 600,
-        padding: "3em",
-        color: "#007aff",
-        background: "#fff url()",
-        backdrop: `
-          rgba(0,0,76,0.4)
-          url("")
-          left top
-          no-repeat
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Doar Agora',
-        confirmButtonColor: 'green',
-        cancelButtonText: 'Fechar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.href = 'donation.php';
-        }
-      });
-    });
-</script>
   
   <!-- Vendor JS Files -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
